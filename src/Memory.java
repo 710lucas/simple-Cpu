@@ -7,6 +7,10 @@ public class Memory {
         return memory[pos];
     }
 
+    public void setMemory(int[] memory){
+        this.memory = memory;
+    }
+
     public int[] getMemory(){
         return memory;
     }

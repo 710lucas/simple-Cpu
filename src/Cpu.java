@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 
 
@@ -33,22 +32,18 @@ public class Cpu {
 
     private  int[] stack = new int[100];
 
-    private Memory mem = new Memory(1000); //1000b (actually more because it's a string and yeah, but that's just for testing)
+    private Memory mem = new Memory(100); //1000b (actually more because it's a string and yeah, but that's just for testing)
 
-    public Cpu(ArrayList<String> file) {
+    public Cpu(int[] opcodes) {
         int i = 0;
-        for (String opcode : file) {
-            mem.getMemory()[i] = Integer.parseInt(opcode);
-            i++;
-        }
 
-        for(int j = 0; j<stack.length; j++){
-            stack[j] = -1;
-        }
+        mem.setMemory(opcodes);
+
+        Arrays.fill(stack, -1);
     }
 
     public void startCpu() throws Exception {
-        while (pc < mem.getMemory().length) {
+        while (pc < mem.getMemory().length && mem.getMemory()[pc] != 0) {
 //            System.out.printf("%d %d    A: %d  B: %d  C: %d\n", pc, mem.get(pc), regs[0], regs[1], regs[2]);
 //            System.out.println(Arrays.toString(stack));
             execOpcode(mem.get(pc));
@@ -57,15 +52,18 @@ public class Cpu {
 
     public void execOpcode(int opcode) throws Exception {
 
-        int firstDigit = opcode/1000;
-        int secondDigit = (opcode/100)-firstDigit*10;
-        int thirdDigit = (opcode/10)-((firstDigit*10)+secondDigit)*10;
-        int lastDigit = (opcode) - ((((firstDigit*10)+secondDigit)*10)+thirdDigit)*10;
 
-        int firstHalf = (firstDigit*10)+secondDigit;
-        int secondHalf = (thirdDigit*10)+ lastDigit;
+        int firstDigit = ((opcode&0xF000)); //>>12
+        int secondDigit = (opcode&0x0F00); //>>8
+        int thirdDigit = (opcode&0x00F0); //>>4
+        int lastDigit = (opcode&0x000F);
 
-        int middle = (secondDigit*10)+thirdDigit;
+        int middle = (opcode&0x0FF0);
+//        System.out.println(firstDigit);
+//        System.out.println(secondDigit);
+//        System.out.println(thirdDigit);
+//        System.out.println(lastDigit);
+//        pc++;
 
 
         //1234
@@ -76,46 +74,46 @@ public class Cpu {
 
 
         switch (firstDigit){
-            case(1):
-                regs[lastDigit] = middle;
+            case(0x1000):
+                regs[lastDigit] = middle>>4;
                 pc++;
                 break;
 
-            case (2):
-                regs[lastDigit] = regs[thirdDigit];
+            case (0x2000):
+                regs[lastDigit] = regs[thirdDigit>>4];
                 pc++;
                 break;
 
-            case(3):
-                regs[lastDigit]=regs[secondDigit]+regs[thirdDigit];
+            case(0x3000):
+                regs[lastDigit]=regs[secondDigit>>8]+regs[thirdDigit>>4];
                 pc++;
                 break;
 
-            case 4:
-                regs[lastDigit] = regs[secondDigit]-regs[thirdDigit];
+            case (0x4000):
+                regs[lastDigit] = regs[secondDigit>>8]-regs[thirdDigit>>4];
                 pc++;
                 break;
 
-            case(5):
-                pc = (middle*10)+ lastDigit;
+            case(0x5000):
+                pc = ((middle>>4)*10)+ lastDigit;
                 pc++;
                 break;
 
-            case 6:
+            case 0x6000:
                 System.out.println(regs[lastDigit]);
                 pc++;
                 break;
 
-            case 7:
+            case (0x7000):
                 addValueToStack(pc);
-                pc = (middle*10)+ lastDigit;
+                pc = ((middle>>4)*10)+ lastDigit;
                 break;
 
-            case 8:
+            case (0x8000):
                 pc = getValueFromStack();
                 break;
 
-            case 9:
+            case (0x9000):
                 if(regs[lastDigit] == 0)
                     pc+=2;
                 else
@@ -153,8 +151,8 @@ public class Cpu {
         }
     }
     private int getValueFromStack() throws Exception {
-        for (int i = stack.length-1; i>=0; i--){
-            if(stack[i] != -1) {
+        for (int i = stack.length - 1; i >= 0; i--) {
+            if (stack[i] != -1) {
                 int tmp = stack[i];
                 stack[i] = -1;
                 return tmp;
@@ -162,5 +160,6 @@ public class Cpu {
         }
         throw new Exception("There is fuck");
     }
+
 
 }
