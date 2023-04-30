@@ -1,8 +1,12 @@
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -29,6 +33,15 @@ public class Main {
             }
         }
 
+        return out;
+    }
+
+    public static int[] leArquivoCompilado(String filename) throws IOException {
+        List<String> file = Files.readAllLines(Path.of(filename));
+        int[] out = new int[file.size()];
+        for(int i = 0; i<file.size(); i++){
+            out[i] = Integer.parseInt(file.get(i));
+        }
         return out;
     }
 
@@ -60,31 +73,37 @@ public class Main {
 //        String nomeArquivo =sc.nextLine();
 //        String arquivoStr = new String(Files.readAllBytes(Paths.get(nomeArquivo)));
 //
+//
+//
 //        for(String quatro : separaEmQuatro(arquivoStr.replace("\n", "").replace("\r", ""))){
 //            System.out.println(Integer.parseInt(quatro, 16));
 //        }
 
 
-        int[] subtracao = {
-                0x1100,
-                0x1011,
-                0x9000,
-                0x7006,
-                0x6000,
-                0x9000,
-                0x4010,
-                0x6000,
-                0x9000,
-                0x8000
-        };
 
-
-//        int[] arquivo = {0x10A0, 0x6000};
-
-        int[] arquivo = subtracao;
-
+//        int[] subtracao = {
+//                0x1100,
+//                0x1011,
+//                0x9000,
+//                0x7006,
+//                0x6000,
+//                0x9000,
+//                0x4010,
+//                0x6000,
+//                0x9000,
+//                0x8000
+//        };
+//
+//
+////        int[] arquivo = {0x10A0, 0x6000};
+//
+//        int[] arquivo = subtracao;
+//
+        int[] arquivo = leArquivoCompilado("teste");
         Cpu cpu = new Cpu(arquivo);
         cpu.startCpu();
+
+
 
 
 
